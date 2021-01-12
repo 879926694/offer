@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+</head>
+<body>
+    <input type="text" name="lname" form="form1"><!--这个虽然在form之外,但是form和下面form中的id相同,则属于一个表单-->
+    <form action="" method="GET" target="" novalidate id="form1"><!--如果在form中设置了novalidate则下面所有的都不验证--><!--target="_blank"是在新页面打开-->
+        <fieldset>
+            <legend>Personal information:</legend>
+            <input type="image" src="img/1.jpg" alt="Submit" width="100" height="100"><!--height 和 width 属性规定 <input> 元素的高度和宽度。height 和 width 属性仅用于 <input type="image">。-->
+            <hr>
+            <input type="file" name="img" multiple><!--如果设置，则规定允许用户在 <input> 元素中输入一个以上的值。
+multiple 属性适用于以下输入类型：email 和 file。-->
+            <hr>
+            First name:<br>
+            <input type="text" name="firstname" value="测试" size="40" maxlength="2" autofocus pattern="[A-Za-z]{3}" title="这个是提示的描述"><br><!--autofocus自动获得焦点--><!--pattern是判断正则,而title是不满足正则时的提示语-->
+            <input type="text" name="lastname" autocomplete="on" placeholder="对于输入框的提示语" required><br><!--placeholder是输入框提示语,required是必填-->
+            User password:<br>
+            <input type="password" name="psw" disabled><br><!--属性规定输入字段是禁用的。被禁用的元素是不可用和不可点击的。被禁用的元素不会被提交。-->
+            <input type="radio" name="sex" value="male" checked>Male<!--checked单选或多选框默认选中-->
+            <br>
+            <input type="radio" name="sex" value="female">Female
+            <hr>
+            <input type="checkbox" name="vehicle" value="Bike">I have a bike
+            <br>
+            <input type="checkbox" name="vehicle" value="Car" checked>I have a car
+            <hr>
+            <input type="number" name="quantity" min="1" max="5">输入1-5的数字
+            <hr>
+            Birthday:
+            <input type="date" name="bday">
+            <hr>
+            Birthday (month and year):
+            <input type="month" name="bdaymonth">
+            <hr>
+            Select a week:
+            <input type="week" name="week_year">
+            <hr>
+            Select a time:
+            <input type="time" name="usr_time">
+            <hr>w
+            Birthday (date and time):
+            <input type="datetime" name="bdaytime">
+            <hr>
+            Birthday (date and time):
+            <input type="datetime-local" name="bdaytime">
+            <hr>
+            E-mail:
+            <input type="email" name="email">
+            <hr>
+            Search Google:
+            <input type="search" name="googlesearch">
+            <hr>
+            Telephone:
+            <input type="tel" name="usrtel">
+            <hr>
+            Add your homepage:
+            <input type="url" name="homepage">
+            <hr>
+            Select your favorite color:
+            <input type="color" name="favcolor">
+            <hr>
+            <input type="range" name="points" min="0" max="6" step="3"><!--step 属性规定 <input> 元素的合法数字间隔-->
+            <hr>
+            <select name="cars">
+                <option value="volvo">Volvo</option>
+                <option value="saab" selected>Saab</option><!--selected下拉列表默认选中-->
+            </select><br>
+            <textarea name="message" rows="10" cols="10"><!--textarea文本域-->
+            The cat was playing in the garden.
+            </textarea><br>
+            <button type="button" onclick="alert('Hello World!')">Click Me!</button><br>
+            <input list="browsers">
+            <datalist id="browsers">
+                <option value="Internet Explorer">
+                <option value="Firefox">
+            </datalist><br>
+            <input type="submit" value="提交按钮1">
+            <input type="submit" value="提交按钮2" formmethod="post" formaction="demo_admin.asp" formnovalidate formtarget="_blank">
+            <!--当submit中有formaction时,会覆盖form中的action,提交到formaction的地址中-->
+            <!--当submit中有formmethod时,会覆盖form中的method,使用formmethod中的方法-->
+            <!--当submit中有formnovalidate时,会覆盖form中的novalidate,不对表单验证-->
+            <!--当submit中有formtarget时,会覆盖form中的target-->
+        </fieldset>
+    </form>
+</body>
+</html>
