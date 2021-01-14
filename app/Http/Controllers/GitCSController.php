@@ -28,4 +28,8 @@ class GitCSController extends Controller {
 
     }
 
+    public function tag2(){
+
+    }
+
 }
