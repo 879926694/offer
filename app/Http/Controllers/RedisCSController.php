@@ -116,18 +116,19 @@ class RedisCSController extends Controller {
         //$a = Redis::zremrangebyscore('sortedSet1',0,2); //zremrangebyscore key min max : 删除集合中score在给定区间的元素,返回int(删除个数)
 
 
-        //score排序取元素下标,score排序取下标区间元素,取score区间元素
+        //取元素对应score,score排序取元素下标,score排序取下标区间元素,取score区间元素
+        //$a = Redis::zscore('sortedSet1','ning'); //zscore key element : 返回给定元素对应的score,返回float(score)
         //$a = Redis::zrank('sortedSet1','bao'); //zrank key member : 返回指定元素在集合中的排名(下标)注意这里不是返回socre而是排序好后的下标,集合中元素按score从小到大排序,返回int(下标)
         //$a = Redis::zrevrank('sortedSet1','bao'); //zrevrank key member : 同上,但是集合中元素按score从大到小排序,返回int(下标)
         //$a = Redis::zrange('sortedSet1',0,5); //zrange key start end : 从集合中指定区间的元素,返回结果按score顺序排列,返回索引数组
         //$a = Redis::zrevrange('sortedSet1',0,5); //zrevrange key start end : 同上,返回结果按score逆序排序,返回索引数组
         //$a = Redis::zrangebyscore('sortedSet1',0,5); //zrangebyscore key min max : 返回集合中score在给定区间的元素,返回索引数组
 
-        //score区间元素数量,元素个数,增加score,元素score
+        //score区间元素数量,元素个数,增加score
         //$a = Redis::zcount('sortedSet1',0,5); //zcount key min max : 返回集合中score在给定区间的数量,返回int(元素数量)
         //$a = Redis::zcard('sortedSet1'); //zcard key : 返回集合中元素个数,int(元素个数)
         //$a = Redis::zincrby('sortedSet1',3,'bao'); //zincrby key incr member : 增加对应member的score值为加incr后的值,并且重新排序,返回更新后的score值,返回float(score)
-        //$a = Redis::zscore('sortedSet1','ning'); //zscore key element : 返回给定元素对应的score,返回float(score)
+
 
         //var_dump($a);
     }
