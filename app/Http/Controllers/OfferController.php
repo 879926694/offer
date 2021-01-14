@@ -43,7 +43,7 @@ class OfferController extends Controller {
 
         //总结5.ROUND(AVG(b.experience_years),2)  round四舍五入保留2位小数,avg求平均数
 
-        //总结6.成绩排序问题非常非常重要  使用rank()over()遇到成绩相同时候是像这样排序1-2-2-4  而dense_rank()over()函数成绩相同时候是这样排序1-2-2-3  而row_num()over()即使有成绩相同那也是1-2-3-4这么排序
+        //总结6.成绩排序问题非常非常重要  使用rank()over()遇到成绩相同时候是像这样排序1-2-2-4  而dense_rank()over()函数成绩相同时候是这样排序1-2-2-3  而row_number()over()即使有成绩相同那也是1-2-3-4这么排序
         //select s.*,rank() over(order by s.total desc) as ranks from (select SId,sum(score) as total from SC group by SId) s
 
         /*总结 : 如果有时间可以看一下
