@@ -16,6 +16,39 @@ class OfferController extends Controller {
         //mysql主从,索引,锁
 
 
+        /*
+         linux重启mysql服务 :
+         service mysqld start (5.0版本是mysqld)   service mysql start (5.5.7版本是mysql)
+         service mysqld stop
+         service mysqld restart
+         或者
+         1.启动：/etc/init.d/mysqld start    /etc/init.d/mysql restart
+         2.停止：/etc/init.d/mysqld stop
+         3.重启：/etc/init.d/mysqld restart
+
+         macos重启mysql
+         1、启动mysql sudo /usr/local/mysql/support-files/mysql.server start
+         2、停止mysql sudo /usr/local/mysql/support-files/mysql.server stop
+         3、重启mysql sudo /usr/local/mysql/support-files/mysql.server restart
+
+         * */
+
+        /*
+         如果在服务器自己安装mysql的时候,如果连接不上而且报这个错Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2),这个是因为远程mysql没有启动,打命令/etc/init.d/mysqld start.此时本地可能还是连不上远程数据库,是因为用户权限的问题,在服务器上连接数据库(mysql -u root -p),然后select user,host from mysql.user;查看一下各个账号的权限,只有host为%的才能远程连接,而host为localhost的账号只能本地连接,然后打命令修改权限1.GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'admin123' WITH GRANT OPTION; 2.flush privileges; 3.exit 打完之后退出,然后重启mysql服务/etc/init.d/mysqld restart (此时外部已经可以连接上远程mysql,如果再报错)
+         * */
+
+
+
+        /*
+        主从
+        show variables like 'server_id';可以用来查看主数据库和从数据库的server_id,各个数据库的server_id都不能重复 ,如果有重复的,那么从服务器在查看show slave status\G时候会报Slave_IO_Running: NO,这样不行
+        如果这个从数据库已经start salve了,那么想重新设置的时候要先stop slave,否则不能成功
+
+        苹果电脑是没有配置文件my.cny的,要自己创建
+        change master to master_host='116.62.167.242',master_user='zhucong',master_password='bao1ning123',master_log_file='mysql-bin.000011',master_log_pos=154;
+         * */
+
+
 
         /*mysql语法顺序
         (7) SELECT

@@ -10,7 +10,7 @@ class PhpCSController extends Controller {
     /**
      */
     public function zongjie() {
-        //php数组和字符串函数,类,面试题,laravel定时任务,git,堆和栈
+        //php数组和字符串函数,类,面试题,laravel定时任务,git,堆和栈,雪崩,设计模式,数据结构,分库分表,负载均衡
 
         //配置https + 申请免费ssl证书 : https://jingyan.baidu.com/article/19192ad8d81ec3e53f57077d.html  步骤:阿里云申请ssl免费证书->提交申请->申请通过后签发证书->下载证书(包括两个文件密钥key和证书pem)->宝塔面板就设置到网站中,不是宝塔面板就保存证书到服务器,然后在nginx配置文件中设置一下就可以
         //如果是宝塔面板搭建的站点,从阿里云或者其他渠道下载证书,证书包括两个文件 .key文件和.pem文件,然后进入到宝塔面板的站点设置,找ssl,将两个证书的内容复制到相应位置,保存,重启则http和https都可以使用,默认走http,如果你想走https,则点击强制https
@@ -495,5 +495,6 @@ class PhpCSController extends Controller {
         }
         return view('subway.subwayIndex');
     }
+
 
 }
