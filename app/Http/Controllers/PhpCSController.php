@@ -7,10 +7,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class PhpCSController extends Controller {
+    public function ceshi() {
+        $a = 'https://note.youdao.com/web/#/file/recent/note/WEBfe2900dd09246321d9b6af3a8b31f58c/a.php';
+        $b = '../../api.php';
+        var_dump(basename($a),basename($b));
+        var_dump(dirname($a),dirname($b));
+        var_dump(pathinfo($a),pathinfo($b));
+        var_dump(filetype($a),filetype($b));
+    }
+
+
     /**
      */
     public function zongjie() {
-        //php数组和字符串函数,类,面试题,laravel定时任务,git,堆和栈,雪崩,设计模式,数据结构,分库分表,负载均衡
+        //php数组和字符串函数,类,面试题,laravel定时任务,git,堆和栈,雪崩,设计模式,数据结构,负载均衡,异常,闭包,递归
 
         //配置https + 申请免费ssl证书 : https://jingyan.baidu.com/article/19192ad8d81ec3e53f57077d.html  步骤:阿里云申请ssl免费证书->提交申请->申请通过后签发证书->下载证书(包括两个文件密钥key和证书pem)->宝塔面板就设置到网站中,不是宝塔面板就保存证书到服务器,然后在nginx配置文件中设置一下就可以
         //如果是宝塔面板搭建的站点,从阿里云或者其他渠道下载证书,证书包括两个文件 .key文件和.pem文件,然后进入到宝塔面板的站点设置,找ssl,将两个证书的内容复制到相应位置,保存,重启则http和https都可以使用,默认走http,如果你想走https,则点击强制https
@@ -494,6 +504,26 @@ class PhpCSController extends Controller {
             );
         }
         return view('subway.subwayIndex');
+    }
+
+    //定时任务
+    public function crontab(){
+        /*
+         laravel定时任务步骤
+         1.在laravel根目录(就是artisan文件的目录)中执行命令  php artisan make:command Test  (laravel5.2及以前的版本使用make:console命令),创建完成后会在app/Console/Commands/目录下创建Test.php文件
+         2.Test文件的handle函数是任务要写的地方
+         3.在app/Console/Kernel.php中完成注册。
+            protected $commands = [
+                Commands\TestConsole::class
+            ];
+         4.在服务器上创建linux定时任务去每分钟执行laravel的定时器,这样laravel的定时任务才好用   * * * * * /usr/bin/php7.0 /var/www/html/laravel/artisan schedule:run >> /dev/null 2>&1
+         * */
+
+    }
+
+    //缓存雪崩
+    public function huancun(){
+        //https://blog.csdn.net/kongtiao5/article/details/82771694
     }
 
 

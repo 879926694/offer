@@ -7,13 +7,13 @@ use Illuminate\Support\Facades\DB;
 
 class OfferController extends Controller {
     /**
-     * 测试
+     * 常用总结
      *
      * @param  int $id
      *
      */
     public function mysqlCS() {
-        //mysql主从,索引,锁
+        //mysql主从,索引,事务锁,分库分表
 
 
         /*
@@ -35,17 +35,6 @@ class OfferController extends Controller {
 
         /*
          如果在服务器自己安装mysql的时候,如果连接不上而且报这个错Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2),这个是因为远程mysql没有启动,打命令/etc/init.d/mysqld start.此时本地可能还是连不上远程数据库,是因为用户权限的问题,在服务器上连接数据库(mysql -u root -p),然后select user,host from mysql.user;查看一下各个账号的权限,只有host为%的才能远程连接,而host为localhost的账号只能本地连接,然后打命令修改权限1.GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'admin123' WITH GRANT OPTION; 2.flush privileges; 3.exit 打完之后退出,然后重启mysql服务/etc/init.d/mysqld restart (此时外部已经可以连接上远程mysql,如果再报错)
-         * */
-
-
-
-        /*
-        主从
-        show variables like 'server_id';可以用来查看主数据库和从数据库的server_id,各个数据库的server_id都不能重复 ,如果有重复的,那么从服务器在查看show slave status\G时候会报Slave_IO_Running: NO,这样不行
-        如果这个从数据库已经start salve了,那么想重新设置的时候要先stop slave,否则不能成功
-
-        苹果电脑是没有配置文件my.cny的,要自己创建
-        change master to master_host='116.62.167.242',master_user='zhucong',master_password='bao1ning123',master_log_file='mysql-bin.000011',master_log_pos=154;
          * */
 
 
@@ -143,94 +132,219 @@ class OfferController extends Controller {
          总结14  SELECT PERSON_NAME, SUM(WEIGHT) OVER(ORDER BY TURN DESC) AS TOTAL_WEIGHT FROM QUEUE    sum(字段)over(order by 字段) 这样查询会把所有条数都查出来,对应每条数据的sum 注意:over中必须有order by 否则会查询sum总值而不是没条对应的值
          * */
 
+    }
+
+    //配置主从
+    public function zhucong(){
+        /*
+            mysql主从配置步骤 :
+            1、主从服务器分别作以下操作：1.1、版本一致  1.2、初始化表，并在后台启动mysql
+            2、修改主服务器master配置文件:
+                #vi /etc/my.cnf
+               [mysqld]
+               log-bin=mysql-bin   //[必须]启用二进制日志
+               server-id=222      //[必须]服务器唯一ID，默认是1(在配置文件中搜索server-id,应该在中间左右)
+            3、修改从服务器slave:
+               #vi /etc/my.cnf
+               [mysqld]
+               log-bin=mysql-bin   //[不是必须]启用二进制日志
+               server-id=226      //[必须]服务器唯一ID，默认是1(在配置文件中搜索server-id,应该在中间左右)
+            4、重启两台服务器的mysql : /etc/init.d/mysql restart
+            5、在主服务器上建立帐户并授权slave:
+               #/usr/local/mysql/bin/mysql -uroot -p
+               mysql>GRANT REPLICATION SLAVE ON *.* to '账号'@'%' identified by '密码'; //一般不用root帐号，%表示所有客户端都可能连，只要帐号，密码正确，此处可用具体客户端IP代替，如192.168.145.226，加强安全。
+            6、登录主服务器的mysql，查询master的状态(这两个值在第7步使用)
+               mysql>show master status;
+               +------------------+----------+--------------+------------------+
+               | File             | Position | Binlog_Do_DB | Binlog_Ignore_DB |
+               +------------------+----------+--------------+------------------+
+               | mysql-bin.000004 |      308 |              |                  |
+               +------------------+----------+--------------+------------------+
+               1 row in set (0.00 sec)
+               注：执行完此步骤后不要再操作主服务器MYSQL，防止主服务器状态值变化
+            7、配置从服务器Slave：
+       mysql>change master to master_host='192.168.145.222',master_user='mysync',master_password='q123456',master_log_file='mysql-bin.000004',master_log_pos=308;//注意不要断开，308数字前后无单引号。
+               Mysql>start slave;    //启动从服务器复制功能(如果之前已经有slave,那么会报错,需要先stop slave在start slave)
+                这里可以 select user,host from mysql.user;查看一下各个账号的权限,只有host为%的才能远程连接,而host为localhost的账号只能本地连接,
+            8、检查从服务器复制功能状态：
+               mysql> show slave status\G
+               *************************** 1. row ***************************
+                          Slave_IO_State: Waiting for master to send event
+                          Master_Host: 192.168.2.222  //主服务器地址
+                          Master_User: mysync   //授权帐户名，尽量避免使用root
+                          Master_Port: 3306    //数据库端口，部分版本没有此行
+                          Connect_Retry: 60
+                          Master_Log_File: mysql-bin.000004
+                          Read_Master_Log_Pos: 600     //#同步读取二进制日志的位置，大于等于Exec_Master_Log_Pos
+                          Relay_Log_File: ddte-relay-bin.000003
+                          Relay_Log_Pos: 251
+                          Relay_Master_Log_File: mysql-bin.000004
+                          Slave_IO_Running: Yes    //此状态必须YES
+                          Slave_SQL_Running: Yes     //此状态必须YES
+                                ......
+            注：Slave_IO及Slave_SQL进程必须正常运行，即YES状态，否则都是错误的状态(如：其中一个NO均属错误)。
+            以上操作过程，主从服务器配置完成。
 
 
 
+            使用主从同步的好处：
+            通过增加从服务器来提高数据库的性能，在主服务器上执行写入和更新，在从服务器上向外提供读功能，可以动态地调整从服务器的数量，从而调整整个数据库的性能。
+            提高数据安全-因为数据已复制到从服务器，从服务器可以终止复制进程，所以，可以在从服务器上备份而不破坏主服务器相应数据
+            在主服务器上生成实时数据，而在从服务器上分析这些数据，从而提高主服务器的性能
 
-/*
-+---------------+---------+
-| Column Name   | Type    |
-+---------------+---------+
-| id            | int     |
-| revenue       | int     |
-| month         | varchar |
-+---------------+---------+
-(id, month) 是表的联合主键。
-这个表格有关于每个部门每月收入的信息。
-月份（month）可以取下列值 ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]。
 
-编写一个 SQL 查询来重新格式化表，使得新的表中有一个部门 id 列和一些对应 每个月 的收入（revenue）列。
+            注意 : 经测试,在同步后的从服务器上新建了一条数据,那么主从同步失效了,进入从服务器mysql使用show slave status\G查看从服务器的状态,显示Slave_SQL_Running:NO,此时需要stop slave,然后start slave,主从同步恢复,新加的数据可以同步,但是从服务器的数据是变化了的,从服务器上之前的数据会缺失,所以从服务器要设置成只读(只读设置set global read_only=1; )
+            注意 : 主从成功配置后,可以再主数据库使用show slave hosts来查看有几个从数据库
+            注意 : 当主数据库有数据时候,要先导出数据 1.flush tables with read lock;(设置锁只能读) 2.mysqldump -uroot -p --master-data=1 --single-transaction --routines --triggers --events  --all-databases > all.sql导出数据库所有数据或者mysqldump -uroot -p'123456' -S /data/3306/data/mysql.sock --all-databases | gzip > /server/backup/mysql_bak.$(date +%F).sql.gz来压缩数据量很大的数据库 3.将sql文件导入到从数据库中 4.unlock tables;解锁主数据库
 
-查询结果格式如下面的示例所示：
 
-Department 表：
-+------+---------+-------+
-| id   | revenue | month |
-+------+---------+-------+
-| 1    | 8000    | Jan   |
-| 2    | 9000    | Jan   |
-| 3    | 10000   | Feb   |
-| 1    | 7000    | Feb   |
-| 1    | 6000    | Mar   |
-+------+---------+-------+
+            主从排错 :
+            1.show variables like 'server_id';可以用来查看主数据库和从数据库的server_id,各个数据库的server_id都不能重复 ,如果有重复的,那么从服务器在查看show slave status\G时候会报Slave_IO_Running: NO,这样不行
+            如果这个从数据库已经start salve了,那么想重新设置的时候要先stop slave,否则不能成功
 
-查询得到的结果表：
-+------+-------------+-------------+-------------+-----+-------------+
-| id   | Jan_Revenue | Feb_Revenue | Mar_Revenue | ... | Dec_Revenue |
-+------+-------------+-------------+-------------+-----+-------------+
-| 1    | 8000        | 7000        | 6000        | ... | null        |
-| 2    | 9000        | null        | null        | ... | null        |
-| 3    | null        | 10000       | null        | ... | null        |
-+------+-------------+-------------+-------------+-----+-------------+
+            2.如果Slave_IO_Running:NO 那么下面会有报错,Last_IO_Error: Fatal error: The slave I/O thread stops because master and slave have equal MySQL server ids; these ids must be different for replication to work (or the --replicate-same-server-id option must be used on slave but this does not always make sense; please check the manual before using it). 这个错误是主从的server-id相等了,我做的时候是在上面新加了一个server-id,但是下面有server-id=1,所以覆盖了,不新加而改下面的server-id即可
 
-注意，结果表有 13 列 (1个部门 id 列 + 12个月份的收入列)。
+            3.苹果电脑是没有配置文件my.cny的,要自己创建
+            change master to master_host='116.62.167.242',master_user='zhucong',master_password='bao1ning123',master_log_file='mysql-bin.000011',master_log_pos=154;
 
-SELECT id,
-SUM(CASE `month` WHEN 'Jan' THEN revenue END) Jan_Revenue,
-SUM(CASE `month` WHEN 'Feb' THEN revenue END) Feb_Revenue,
-SUM(CASE `month` WHEN 'Mar' THEN revenue END) Mar_Revenue,
-SUM(CASE `month` WHEN 'Apr' THEN revenue END) Apr_Revenue,
-SUM(CASE `month` WHEN 'May' THEN revenue END) May_Revenue,
-SUM(CASE `month` WHEN 'Jun' THEN revenue END) Jun_Revenue,
-SUM(CASE `month` WHEN 'Jul' THEN revenue END) Jul_Revenue,
-SUM(CASE `month` WHEN 'Aug' THEN revenue END) Aug_Revenue,
-SUM(CASE `month` WHEN 'Sep' THEN revenue END) Sep_Revenue,
-SUM(CASE `month` WHEN 'Oct' THEN revenue END) Oct_Revenue,
-SUM(CASE `month` WHEN 'Nov' THEN revenue END) Nov_Revenue,
-SUM(CASE `month` WHEN 'Dec' THEN revenue END) Dec_Revenue
-FROM Department
-GROUP BY id;
-注意 : 这里的SUM起到遍历的作用而不是求和
-*/
 
-/*
+             * */
+    }
 
-您想知道用户访问您的应用程序的时间。您决定创建“[0-5>”，“[5-10>”，“[10-15>” 和 “15 minutes and more”四个时段，并计算每个时段的用户数。
-select(
-case
-when duration >= 0
-and duration < 5 * 60 then "[0-5>"
-when duration >= 5 * 60
-and duration < 10 * 60 then "[5-10>"
-when duration >= 10 * 60
-and duration < 15 * 60 then "[10-15>"
-else "15 or more"
-end
-) bin,
-count(*) total
-from Sessions
-group by ( //group by中还可以这样写!
-case
-when duration >= 0
-and duration < 5 * 60 then "[0-5>"
-when duration >= 5 * 60
-and duration < 10 * 60 then "[5-10>"
-when duration >= 10 * 60
-and duration < 15 * 60 then "[10-15>"
-else "15 or more"
-end
-);
- */
+    //事务
+    public function shiwu(){
+        //1.首先要记住,innodb在隔离级别为RR(可重复度的情况下)是可以解决脏读,不可重复读,幻读的
+        //2.死锁 : 死锁简单说就是，线程1拿A锁等B锁，同时线程2拿B锁等A锁   解决:发生死锁时，InnoDB一般都能通过算法（wait-for graph）自动检测到。第一个事务中，检测到了死锁，马上退出，第二个事务获得了锁
+        /*
+         3.悲观锁包括 : 共享锁/排他锁（行级别读/写锁）  意向共享锁/意向排他锁（表级别读/写锁）
+                       其中行锁算法包括 : 记录锁  间隙锁  临键锁
+           乐观锁 : 乐观锁机制通过在表中添加version字段进行实现。在Mysql InnoDB引擎中，其会在每行数据中额外添加两个隐藏值来实现MVCC，这两个值一个记录这行数据何时被创建，另外一个记录这行数据何时更新(或者被删除)。在实际操作中，每开启一个新事务，事务的版本号就                    会递增
+         * */
+        /*
+         原子性（Atomicity）：事务是一个原子操作单元。在当时原子是不可分割的最小元素，其对数据的修改，要么全部成功，要么全部都不成功。
+        一致性（Consistent）：事务开始到结束的时间段内，数据都必须保持一致状态。
+        隔离性（Isolation）：数据库系统提供一定的隔离机制，保证事务在不受外部并发操作影响的”独立”环境执行。
+        持久性（Durable）：事务完成后，它对于数据的修改是永久性的，即使出现系统故障也能够保持。
+         * */
+    }
+
+    //索引
+    public function suoyin(){
+        /*
+         索引
+            普通索引：仅加速查询
+            唯一索引：加速查询 + 列值唯一（可以有null）
+            主键索引：加速查询 + 列值唯一（不可以有null）+ 表中只有一个(表中只能有一个主键,但这个主键可以是多个字段,称为联合主键)
+            ps 主键：用PRIMARY KEY修饰的列。若只有一个主键，则其不能重复。若存在两个或多个主键，则为复合主键(也就是多个列可以组成复合主键)；此时，只有当组成复合主键的所有列的值都相同时，才不允许(把多个列同时重复才视为重复)。
+            组合索引：多列值组成一个索引，专门用于组合搜索，其效率大于索引合并
+            全文索引：对文本的内容进行分词，进行搜索
+
+
+            （abc） （ab） （ac）（bc）（a） （b） （c） (注意最左原则)
+              1. 复合索引又叫联合索引。
+              2. abc    ab    a     ac  可以
+              3. 对于复合索引:Mysql从左到右的使用索引中的字段，一个查询可以只使用索引中的一部份，但只能是最左侧部分。
+              4. 例如索引是key index (a,b,c). 可以支持a | a,b| a,b,c 3种组合进行查找，但不支持 b,c进行查找 ,当最左侧字段是常量引用时，索引就十分有效。
+
+
+             索引查询失效的几个情况：(索引失效分析工具：可以使用explain命令加在要分析的sql语句前面，在执行结果中查看key这一列的值，如果为NULL，说明没有使用索引。)
+                1、like 以%开头，索引无效；当like前缀没有%，后缀有%时，索引有效。
+                2、or语句前后没有同时使用索引。当or左右查询字段只有一个是索引，该索引失效，只有当or左右查询字段均为索引时，才会生效
+                3、组合索引，不是使用第一列索引，索引失效。
+                4、数据类型出现隐式转化。如varchar不加单引号的话可能会自动转换为int型，使索引无效，产生全表扫描。
+                5、在索引字段上使用not，<>，!=。不等于操作符是永远不会用到索引的，因此对它的处理只会产生全表扫描。 优化方法： key<>0 改为 key>0 or key<0。
+                6、对索引字段进行计算操作、字段上使用函数。
+                7、当全表扫描速度比索引速度快时，mysql会使用全表扫描，此时索引失效。
+         * */
+    }
+
+
+    //一些题目
+    public function timu(){
+        /*
+        +---------------+---------+
+        | Column Name   | Type    |
+        +---------------+---------+
+        | id            | int     |
+        | revenue       | int     |
+        | month         | varchar |
+        +---------------+---------+
+        (id, month) 是表的联合主键。
+        这个表格有关于每个部门每月收入的信息。
+        月份（month）可以取下列值 ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]。
+
+        编写一个 SQL 查询来重新格式化表，使得新的表中有一个部门 id 列和一些对应 每个月 的收入（revenue）列。
+
+        查询结果格式如下面的示例所示：
+
+        Department 表：
+        +------+---------+-------+
+        | id   | revenue | month |
+        +------+---------+-------+
+        | 1    | 8000    | Jan   |
+        | 2    | 9000    | Jan   |
+        | 3    | 10000   | Feb   |
+        | 1    | 7000    | Feb   |
+        | 1    | 6000    | Mar   |
+        +------+---------+-------+
+
+        查询得到的结果表：
+        +------+-------------+-------------+-------------+-----+-------------+
+        | id   | Jan_Revenue | Feb_Revenue | Mar_Revenue | ... | Dec_Revenue |
+        +------+-------------+-------------+-------------+-----+-------------+
+        | 1    | 8000        | 7000        | 6000        | ... | null        |
+        | 2    | 9000        | null        | null        | ... | null        |
+        | 3    | null        | 10000       | null        | ... | null        |
+        +------+-------------+-------------+-------------+-----+-------------+
+
+        注意，结果表有 13 列 (1个部门 id 列 + 12个月份的收入列)。
+
+        SELECT id,
+        SUM(CASE `month` WHEN 'Jan' THEN revenue END) Jan_Revenue,
+        SUM(CASE `month` WHEN 'Feb' THEN revenue END) Feb_Revenue,
+        SUM(CASE `month` WHEN 'Mar' THEN revenue END) Mar_Revenue,
+        SUM(CASE `month` WHEN 'Apr' THEN revenue END) Apr_Revenue,
+        SUM(CASE `month` WHEN 'May' THEN revenue END) May_Revenue,
+        SUM(CASE `month` WHEN 'Jun' THEN revenue END) Jun_Revenue,
+        SUM(CASE `month` WHEN 'Jul' THEN revenue END) Jul_Revenue,
+        SUM(CASE `month` WHEN 'Aug' THEN revenue END) Aug_Revenue,
+        SUM(CASE `month` WHEN 'Sep' THEN revenue END) Sep_Revenue,
+        SUM(CASE `month` WHEN 'Oct' THEN revenue END) Oct_Revenue,
+        SUM(CASE `month` WHEN 'Nov' THEN revenue END) Nov_Revenue,
+        SUM(CASE `month` WHEN 'Dec' THEN revenue END) Dec_Revenue
+        FROM Department
+        GROUP BY id;
+        注意 : 这里的SUM起到遍历的作用而不是求和
+        */
+
+        /*
+
+        您想知道用户访问您的应用程序的时间。您决定创建“[0-5>”，“[5-10>”，“[10-15>” 和 “15 minutes and more”四个时段，并计算每个时段的用户数。
+        select(
+        case
+        when duration >= 0
+        and duration < 5 * 60 then "[0-5>"
+        when duration >= 5 * 60
+        and duration < 10 * 60 then "[5-10>"
+        when duration >= 10 * 60
+        and duration < 15 * 60 then "[10-15>"
+        else "15 or more"
+        end
+        ) bin,
+        count(*) total
+        from Sessions
+        group by ( //group by中还可以这样写!
+        case
+        when duration >= 0
+        and duration < 5 * 60 then "[0-5>"
+        when duration >= 5 * 60
+        and duration < 10 * 60 then "[5-10>"
+        when duration >= 10 * 60
+        and duration < 15 * 60 then "[10-15>"
+        else "15 or more"
+        end
+        );
+         */
 
 
 

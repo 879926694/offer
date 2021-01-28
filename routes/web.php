@@ -42,6 +42,10 @@ Route::group(['prefix' => '/offer/api'], function () {
         return $index->$action();
     });
 
+    Route::post('/php/{action}', function(App\Http\Controllers\PhpCSController $index, $action){
+        return $index->$action();
+    });
+
     Route::group(['prefix' => '/database'], function () {
         Route::post('/mysqlCS', [OfferController::class, 'mysqlCS']);
         Route::post('/phpCS', [PhpCSController::class, 'PhpTest']);
@@ -58,6 +62,7 @@ Route::group(['prefix' => '/offer/api'], function () {
         Route::post('/subwayPay', [PhpCSController::class, 'subwayPay']);
         Route::post('/forKobe', [PhpCSController::class, 'forKobe']);
         Route::post('/suanfaCeshi', [PhpCSController::class, 'suanfaCeshi']);
+        Route::post('/ceshi', [PhpCSController::class, 'ceshi']);
     });
 
 });
