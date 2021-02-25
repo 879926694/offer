@@ -59,10 +59,13 @@ Route::group(['prefix' => '/offer/api'], function () {
         Route::post('/suanfa7', [PhpCSController::class, 'suanfa7']);
         Route::post('/suanfa8', [PhpCSController::class, 'suanfa8']);
         Route::post('/suanfa9', [PhpCSController::class, 'suanfa9']);
+        Route::post('/suanfa10', [PhpCSController::class, 'suanfa10']);
         Route::post('/subwayPay', [PhpCSController::class, 'subwayPay']);
         Route::post('/forKobe', [PhpCSController::class, 'forKobe']);
         Route::post('/suanfaCeshi', [PhpCSController::class, 'suanfaCeshi']);
         Route::post('/ceshi', [PhpCSController::class, 'ceshi']);
+        Route::post('/string', [PhpCSController::class, 'string']);
+        Route::post('/arr', [PhpCSController::class, 'arr']);
     });
 
 });

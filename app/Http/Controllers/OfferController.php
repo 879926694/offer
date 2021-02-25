@@ -132,6 +132,81 @@ class OfferController extends Controller {
          总结14  SELECT PERSON_NAME, SUM(WEIGHT) OVER(ORDER BY TURN DESC) AS TOTAL_WEIGHT FROM QUEUE    sum(字段)over(order by 字段) 这样查询会把所有条数都查出来,对应每条数据的sum 注意:over中必须有order by 否则会查询sum总值而不是没条对应的值
          * */
 
+        /*
+         4.mysql数据库分区+分表
+        分区 : 所谓分区,就是把一个数据表的文件和索引分散存储在不同的物理文件中.mysql5.1及以上版本才支持分区      https://www.cnblogs.com/mliudong/p/3625522.html(分区教程+示例)
+        查看mysql是否支持分区的命令  :  SHOW VARIABLES LIKE '%partition%'  (这个命令仅仅支持mysql5.6以下的版本)   如果显示 | have_partitioning | YES | 则为支持分区
+                                                              show plugins;(如果是msyql5.6以上版本应该用这个命令去查看)    会显示所有插件，如果找到有：partition ACTIVE STORAGE ENGINE GPL  则为支持分区
+
+        RANGE分区 : 基于属于一个给定连续区间的列值，把多行分配给分区。这些区间要连续且不能相互重叠，使用VALUES LESS THAN操作符来进行定义。以下是实例。优点是使查询效率变高
+        注意 : 如果想要将id变为主键自增,则用来做分区的字段也必须为主键用于做分区表的列必须是主键，或包含于主键中
+
+        注意 : 如果想要重建分区并保留数据,没有这样的操作,只能是建立一个新的表,做好分区,然后将数据转移到新的表中(所以设计表时候应该慎重)
+
+        添加分区的语句:(注意:1.当分区中有最大值MAXVALUE的时候,是不能加分区的会报错 2.加分区时,只能从最大值往后加分区,而不能往最大值前加分区,会报错,所以想要用分区要先设计好程序,设计好表)
+        ALTER TABLE 表名 ADD PARTITION(PARTITION 分区名 VALUES LESS THAN (条件))
+
+        删除分区的语句: (注意,删除分区会同时删除分区中的数据,慎重!!)
+        ALTER TABLE 表名 DROP PARTITION 分区名;
+
+        建表实例1 : 根据store_id字段分区
+        CREATE TABLE t2(
+            id INT NOT NULL,
+            fname VARCHAR(30),
+            lname VARCHAR(30),
+            hired DATE NOT NULL DEFAULT '1970-01-01',
+            separated DATE NOT NULL DEFAULT '9999-12-31',
+            job_code INT NOT NULL,
+            store_id INT NOT NULL
+        )
+        PARTITION BY RANGE (store_id) (
+            PARTITION p0 VALUES LESS THAN (6),
+            PARTITION p1 VALUES LESS THAN (11),
+            PARTITION p2 VALUES LESS THAN (16),
+            PARTITION p3 VALUES LESS THAN MAXVALUE
+        );
+
+        建表实例2 : 根据年份separated分区
+        CREATE TABLE employees (
+            id INT NOT NULL,
+            fname VARCHAR(30),
+            lname VARCHAR(30),
+            hired DATE NOT NULL DEFAULT '1970-01-01',
+            separated DATE NOT NULL DEFAULT '9999-12-31',
+            job_code INT,
+            store_id INT
+        )
+
+        PARTITION BY RANGE (YEAR(separated)) (
+            PARTITION p0 VALUES LESS THAN (1991),
+            PARTITION p1 VALUES LESS THAN (1996),
+            PARTITION p2 VALUES LESS THAN (2001),
+            PARTITION p3 VALUES LESS THAN MAXVALUE
+        );
+
+        几种获取MySQL分区表信息的常用方法
+        SHOW CREATE TABLE + 表名 可以查看创建分区表的CREATE语句
+        EXPLAIN PARTITIONS SELECT * from +表名 查看select语句怎样使用分区 
+
+        LIST分区优点(不常用) : 便于删除
+        CREATE TABLE employees (
+            id INT NOT NULL,
+            fname VARCHAR(30),
+            lname VARCHAR(30),
+            hired DATE NOT NULL DEFAULT '1970-01-01',
+            separated DATE NOT NULL DEFAULT '9999-12-31',
+            job_code INT,
+            store_id INT
+        )
+
+        PARTITION BY LIST(store_id)
+            PARTITION pNorth VALUES IN (3,5,6,9,17),
+            PARTITION pEast VALUES IN (1,2,10,11,19,20),
+            PARTITION pWest VALUES IN (4,12,13,14,18),
+            PARTITION pCentral VALUES IN (7,8,15,16)
+        );
+         * */
+
     }
 
     //配置主从
