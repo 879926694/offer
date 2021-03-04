@@ -64,7 +64,7 @@ class RedisCSController extends Controller {
         //$a = Redis::brpop(['list2','list3'],10);//与blpop相似,不同的是blpop从头部删除,而brpop从尾部删除
 
 
-        //长度,取值,截取,删除几个值,设置下标
+        //长度,取值,截取,删除几个值,设置下标=
         //$a = Redis::llen('list2');//返回key对应List的长度,key必须是List类型否则返回false,如果key不存在,那返回int(0)
         //$a = Redis::lrange('list1',0,-1);//返回指定区间内(start ~ end)的元素,下标从0开始,负值表示从链表尾部开始计算,-1表示倒数第一个元素,返回索引数组,key不存在返回空数组
         //$a = Redis::ltrim('list1',0,-1);//截取List指定区间内(start~end)元素,成功返回true(截取的意思是,这个key只保留截取部分,相当于这个key删除了截取范围以外的值) 返回true

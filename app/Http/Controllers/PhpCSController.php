@@ -34,7 +34,7 @@ class PhpCSController extends Controller {
     /**
      */
     public function zongjie() {
-        //php数组和字符串函数,类,面试题,laravel定时任务,git,堆和栈,雪崩,设计模式,数据结构,负载均衡,异常,闭包,递归,php操作文件,算法,redis缺点,sql防注入,xss攻击,文件操作,socket,分区分表
+        //php数组和字符串函数,类,面试题,laravel定时任务,git,堆和栈,雪崩,设计模式,数据结构,负载均衡,异常,闭包,递归,php操作文件,算法,redis缺点,sql防注入,xss攻击,文件操作,socket,分区分表,k8s,kafka,mq,composer
 
 
 
