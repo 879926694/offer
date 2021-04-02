@@ -10,31 +10,29 @@ use phpDocumentor\Reflection\Types\True_;
 class PhpCSController extends Controller {
     public $num = 1;
     public function ceshi() {
-        $a = $this->niu(12);
-        var_dump($a);
-    }
+        $array = array(1, -2, 3, 10, -4, 7, 2, -5,10,-7,15);
 
-    public function niu($n){
-        for ($i=1;$i<=$n;$i++)
-        {
-            if($i>=4 && $i<15)
-            {
-                $this->num++;
-                $this->niu($n-$i);
-            }
-            elseif($i==20)
-            {
-                $this->num--;
+        $max = 0;
+        $count = count($array);
+        for($i=0;$i<$count;$i++){
+            $num = 0;
+            for($j=$i;$j<$count;$j++){
+                $num += $array[$j];
+                if($num>$max){
+                    $max = $num;
+                }
             }
         }
-        return  $this->num;
+        echo $max;
     }
+    public function ceshi2(&$a){
 
+    }
 
     /**
      */
     public function zongjie() {
-        //php数组和字符串函数,类,面试题,laravel定时任务,git,堆和栈,雪崩,设计模式,数据结构,负载均衡,异常,闭包,递归,php操作文件,算法,redis缺点,sql防注入,xss攻击,文件操作,socket,分区分表,k8s,kafka,mq,composer
+        //php数组和字符串函数,类,面试题,laravel定时任务,git,堆和栈,雪崩,设计模式,数据结构,负载均衡,异常,闭包,递归,php操作文件,算法,redis缺点,sql防注入,xss攻击,socket,分区分表,k8s,kafka,mq,composer,存储结构,索引b+树,mysql怎么执行的,nginx和php的关系,短信怎么解决重复点击,cookie和session,get和post,跨域,链表,Restful的设计风格
 
 
 
@@ -1284,5 +1282,84 @@ like查询时，如果用户输入的值有"_"和"%"，则会出现这种情况�
         var_dump($arr);
     }
 
+    public function ssjy_1(Request $request) {
+        /*
+        请写出一个根据生日计算出此人在指定的时间点的年龄的函数,要求:
+        1.入口参数为生日和指定的时间点,入口参数格式要兼容Unix timestamp和字符串两种方式,其中生日为必填参数,指定的时间点为选填参数,不填则用系统当前时间计算
+        2.返回值为年龄(周岁)或false(出现各种错误,异常)
+         * */
+        $birthday = $request->input('birthday');
+        $date = $request->input('date',time());
+        if(empty($birthday)) return false;
+
+        if(is_int($birthday)){
+            $birthday = date('Y-m-d',$birthday);
+        }else{
+            $birthday = date('Y-m-d',strtotime($birthday));
+        }
+
+        if(is_int($date)){
+            $date = date('Y-m-d',$date);
+        }else{
+            $date = date('Y-m-d',strtotime($date));
+        }
+
+        list($y1,$m1,$d1) = explode('-',$birthday);
+        list($y2,$m2,$d2) = explode('-',$date);
+
+        $age = $y2 - $y1;
+
+        if((int)($m1.$d1)>(int)($m2.$d2)){
+            $age = $age - 1;
+        }
+
+        return $age;
+
+    }
+
+    public function ssjy_2(Request $request) {
+        /*
+        现有一组数据,请写出一个PHP函数将这些数据按出现次数排序,慈湖相同的则将最前面的排在前面.例如: array('a','b','b','d','f','a','b',),经过排序后为array('b','a','d','f')
+         * */
+        $arr = array('a','b','b','d','f','a','b');
+        $newArr = array_count_values($arr);
+        arsort($newArr);
+
+        $a = [];
+        foreach($newArr as $k=>$v){
+            $a[] = $k;
+        }
+        return $a;
+
+    }
+
+    public function ssjy_3(Request $request) {
+        /*
+        写一个用于通用文件处理的类,支持本地文件的创建,读取,清空,删除,追加内容,关闭的基础功能,特别注意要有完备的自动记录报错日志的功能供技术人员排查故障问题
+         * */
+
+
+    }
+
+    public function ssjy_4(Request $request) {
+        /*
+        请说明SQL的差别
+        SELECT * FROM table WHERE YEAR(orderDate)<2013
+        SELECT * FROM table WHERE orderDate<"2013-05-03"
+
+
+        优化SQL
+        message表:200万条记录,user表:1000万条记录
+        Select * from user where uid in (select uid from message where to_uid=49874022)
+        select user.* from user left join message on user.uid=message.uid where message.to_uid=49874022
+
+        数据库group by查询SQL中,where和having的区别是什么
+        group by是分组查询,where是根据查询条件筛选,而having对筛选出来的分组进行过滤
+
+        文件和目录采用777权限有哪些利弊
+         * */
+
+
+    }
 
 }

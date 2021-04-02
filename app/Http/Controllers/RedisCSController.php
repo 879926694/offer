@@ -101,7 +101,7 @@ class RedisCSController extends Controller {
 
         //取所有值
         //$a = Redis::smembers('set1'); //smembers key : 返回key对应set的所有元素,结果是无序的
-        //var_dump($a);
+        //var_dump($a);e
     }
 
     //Sorted Set类型相关命令 : 不可以有重复元素,但是可以有相同sorce,(注意,相等的score也是有存的先后顺序的,根据score由大到小或者由小到大排序取出时候,score相等那就按照存时候的先后顺序去取)   Sorted Set类型相当于一个罐子里有很多颜色的球,颜色不可以相同,而且球上有对应的数字,数字可以相同

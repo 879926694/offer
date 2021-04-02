@@ -64,8 +64,12 @@ Route::group(['prefix' => '/offer/api'], function () {
         Route::post('/forKobe', [PhpCSController::class, 'forKobe']);
         Route::post('/suanfaCeshi', [PhpCSController::class, 'suanfaCeshi']);
         Route::post('/ceshi', [PhpCSController::class, 'ceshi']);
+        Route::get('/ceshi', [PhpCSController::class, 'ceshi']);
         Route::post('/string', [PhpCSController::class, 'string']);
         Route::post('/arr', [PhpCSController::class, 'arr']);
+        Route::post('/ssjy_1', [PhpCSController::class, 'ssjy_1']);
+        Route::post('/ssjy_2', [PhpCSController::class, 'ssjy_2']);
+        Route::post('/ssjy_3', [PhpCSController::class, 'ssjy_3']);
     });
 
 });

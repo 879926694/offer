@@ -11,6 +11,13 @@ class MianshiController extends Controller {
 
     public function mianshiti(){
         /*
+         mysql索引,btree如二叉树一样，每次查询都是从树的入口root开始，依次遍历node，获取leaf。Hash 索引像键值对一样,仅仅能满足"=","IN"和"<=>"查询，不能使用范围查询。
+        为什么 B+ Tree 索引会降低新增、修改、删除的速度
+        B+ Tree 是一颗平衡树，如果对这颗树新增、修改、删除的话，会破坏它的原有结构；
+        我们在做数据新增、修改、删除的时候，需要花额外的时间去维护索引；
+        正因为这些额外的开销，导致索引会降低新增、修改、删除的速度。
+         * */
+        /*
         8.伪静态
 
         4.获取文件信息
@@ -466,6 +473,100 @@ htmlspecialchars() 函数把特殊字符转换为 HTML 实体。这意味着 < �
         //14.获取客户端ip和服务端ip  $_SERVER['REMOTE_ADDR'] $_SERVER['SERVER_ADDR']
         //15.一个三角形三个顶点有3只老鼠,一声枪响,3只老鼠开始沿三角形的边匀速运动,请问他们相遇的概率是
         //16.有一母牛,到4岁可生育,每年一头,所生均是一样的母牛,到15岁绝育,不能再生,20岁死亡,问n年后有多少头牛
+    }
+
+    public function question_5(){
+        //mysql的explain
+        /*
+        EXPLAIN : https://blog.csdn.net/eagle89/article/details/89516496
+        EXPLAIN :模拟Mysql优化器是如何执行SQL查询语句的，从而知道Mysql是如何处理你的SQL语句的，分析你的查询语句或是表结构的性能瓶颈。
+        explain显示了mysql如何使用索引来处理select语句以及连接表。可以帮助选择更好的索引和写出更优化的查询语句
+        Explain中各字段的解释 :
+        1.id : select查询的数字序列号，表示查询中执行select子句、或多表联合查询时操作表、的顺序；id相同，执行顺序由上至下,id不同，id越大执行优先级越高
+        2.select_type :
+                ·（1）SIMPLE  简单查询，查询中不包含子查询、union（联合查询）；
+                ·（2）PRIMARY  查询中若包含子查询，则最外层查询被标记为PRIMARY；
+                ·（3）SUBQUERY  在select或where列表中的子查询
+                ·（4）DERIVED  典型语法：from ( 子查询 ) s1， 在from列表中包含的子查询，被标记为DERIVED（衍生），这个子查询执行后的结果集放在一张虚表s1中；
+                ·（5）UNION  若第二条select出现在union之后，则标记为union联合多表查询； 若union包含在from字句的查询中，即select 属性 from（子查询1 union 子查询2）s1，这种外层的select被标记为DERIVED；
+                · （6）UNION RESULT  从UNION表中获取结果的SELECT
+        3.table : 指id对应的表，通过id判断表的执行顺序；也指这一行的数据是关于哪张表的；
+        4.type : 显示查询时，使用了哪种查询类型，日常工作中经常接触到的有以下7种，性能由最好到最差依次是：system > const > eq_ref > ref > range > index > ALL,一般需要保证查询类型等级达到range，最好能达到ref，避免使用ALL。
+        5.possible_keys : 查询的字段上若存在索引，则将索引列出，一个或多个，但不一定在查询时实际使用；
+        6.key : 实际使用的索引，若为NULL，则没有使用索引，常见的可能原因：没有建索引,sql语句写法错误，索引失效,possible_key也为NULL时，表示用不到索引
+        7.key_len : 可以通过key_len看出索引字段的个数，74指1个，78指2个，140指3个；
+        8.ref : 显示使用索引的是哪个字段，可以是一个const常量；ps：type里的ref指非唯一索引扫描，对索引字段，可能存在多个重复值；
+        9.rows : 索引查询时，大致估算出查询到所需记录读取的行数，rows越小越好；
+        10.Extra
+                额外信息，包含以下三种：
+                · （1）Using filesort
+                说明建立的、准备使用的索引index并没有被用到，执行了文件排序；
+                可能是sql语句写法有问题，与之前建立的索引index冲突了；
+
+                · （2）Using temporary
+                使用了临时表来保存中间结果，说明建立的索引没有使用完全；
+                常见于排序order by和分组查询group by；
+
+                · （3）Using index
+                select操作中用到了覆盖索引（Covering Index），说明sql执行的效率不错！
+                覆盖索引（Covering Index）：
+                eg：先creat一个index，index_字段a_字段b；
+                然后select 字段a，字段b on table where 字段a=…，字段b=…
+                即先创建拥有某几个字段的索引，然后查询索引里的字段，where列表是索引字段的值；即当索引字段值为XXX时，查询该字段；这是select效率最高的方式。
+                ··· 若同时出现using where，表明索引被用来执行索引键值的查找；
+                ··· 若没有同时出现using where，表明索引没有用来执行索引键值的查找，只是用来读取数据；
+
+
+        索引命中 : https://www.jianshu.com/p/499cf5795de5 (最左侧a=某某，后面列大于小于无所谓，都使用索引（但后面必须 and and ）,但是a>这种不行,中间带or不行,单独使用b,c不行)
+         * */
+    }
+
+    public function question_6(){
+        //redis处理秒杀
+        /*
+        1.预生成库存数量的订单rpush
+        2.用户下单请求,使用lpop取出订单,并存入hash,状态为未支付
+        3.如果不能取出订单,则表示库存已使用完,显示秒杀失败
+        4.如果用户支付,则将hash中对应的订单状态改为已支付,如果用户未支付超时或者取消订单,则订单状态改为取消,然后预生成订单重新添加,让用户可以继续秒杀
+        5.秒杀结束后,将所有redis订单取出,定时任务存入数据库
+         * */
+    }
+
+    public function question_7(){
+        //cookie和session
+        /*
+        1.cookie和session原理及区别   
+            cookie是服务器在本地机器上存储的小段文本或者是内存中的一段数据，并随每一个请求发送至同一个服务器。cookie信息是以请求头的方式发送到服务器端的：
+            session是一种服务器端的信息管理机制，它把这些文件信息以文件的形式存放在服务器的硬盘空间上,当客户端向服务器发出请求时，要求服务器端产生一个session时，服务器端会先检查一下，客户端的cookie里面有没有session_id，是否过期。如果有这样的session_id的话，服务器端会根据cookie里的session_id把服务器的session检索出来。如果没有这样的session_id的话，服务器端会重新建立一个。PHPSESSID是一串加了密的字符串，它的生成按照一定的规则来执行。同一客户端启动二次session_start的话，session_id是不一样的。 
+            区别：Cookie保存在客户端浏览器中，而Session保存在服务器上。Cookie机制是通过检查客户身上的“通行证”来确定客户身份的话，那么Session机制就是通过检查服务器上的“客户明细表”来确认客户身份。Session相当于程序在服务器上建立的一份客户档案，客户来访的时候只需要查询客户档案表就可以了。
+
+        2.session产生的session_id放在cookie里面，如果用户把cookie禁止掉，是不是session也不能用了呢？
+            禁止掉cookie后，session当然可以用，不过通过其他的方式来获得这个sessionid，比如，可以跟在url的后面，或者以表单的形势提交到服务器端。从而使服务器端了解客户端的状态。
+
+         * */
+    }
+
+    public function question_8(){
+        //微信支付
+        /*
+        准备 : 商户需要拥有一个微信支付商户号，并通过超级管理员账号登陆商户平台，获取商户API证书。商户API证书的压缩包中包含了签名必需的私钥和商户证书。
+        1.构造签名串 :
+            HTTP请求方法\n
+            URL\n
+            请求时间戳\n
+            请求随机串\n
+            请求报文主体\n
+        2.计算签名值 : 使用商户私钥对待签名串进行SHA256 with RSA签名，并对签名结果进行Base64编码得到签名值。
+        3.设置HTTP头 :
+            (1).认证类型，目前为WECHATPAY2-SHA256-RSA2048
+            (2).签名信息
+            发起请求的商户（包括直连商户、服务商或渠道商）的商户号 mchid
+            商户API证书serial_no，用于声明所使用的证书
+            请求随机串nonce_str
+            时间戳timestamp
+            签名值signature
+
+         * */
     }
 
 
